@@ -38,7 +38,7 @@
     padding: 0 2rem;
   }
   .header-inner {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 1.5rem 0 1.25rem;
     display: flex;
@@ -77,9 +77,10 @@
     background: var(--surface);
     border-bottom: 1px solid var(--border);
     padding: 0 2rem;
+    overflow-x: auto;
   }
   .stats-inner {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     display: flex;
     gap: 0;
@@ -88,6 +89,7 @@
     flex: 1;
     padding: 1rem 1.5rem 1rem 0;
     border-right: 1px solid var(--border);
+    min-width: 150px;
   }
   .stat:last-child { border-right: none; }
   .stat-label {
@@ -112,7 +114,7 @@
 
   /* CONTROLS */
   .controls-wrap {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 1.5rem auto 1rem;
     padding: 0 2rem;
     display: flex;
@@ -175,7 +177,7 @@
 
   /* TABLE */
   .table-wrap {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto 3rem;
     padding: 0 2rem;
     overflow-x: auto;
@@ -187,6 +189,7 @@
     border-radius: 10px;
     border: 1px solid var(--border);
     overflow: hidden;
+    min-width: 900px;
   }
   thead th {
     padding: 10px 14px;
@@ -213,9 +216,9 @@
     color: var(--text);
   }
   .td-name { font-weight: 500; font-size: 13px; max-width: 260px; }
-  .td-form { color: var(--muted); font-size: 12px; }
-  .td-conc { font-family: 'DM Mono', monospace; font-size: 12px; white-space: nowrap; }
-  .td-class { color: var(--muted); font-size: 12px; max-width: 220px; }
+  .td-form { color: var(--muted); font-size: 12px; max-width: 200px; }
+  .td-conc { font-family: 'DM Mono', monospace; font-size: 12px; white-space: nowrap; max-width: 180px; }
+  .td-remume { color: var(--muted); font-size: 12px; max-width: 280px; }
 
   /* BADGES */
   .badge {
@@ -252,7 +255,7 @@
 
   /* LEGEND */
   .legend {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto 2rem;
     padding: 0 2rem;
     display: flex;
@@ -277,6 +280,7 @@
     .stat { border-right: none; border-bottom: 1px solid var(--border); padding: 0.75rem 0; }
     .stat:last-child { border-bottom: none; }
     .page-header, .stats-bar, .controls-wrap, .table-wrap, .legend { padding-left: 1rem; padding-right: 1rem; }
+    .table-wrap { overflow-x: auto; }
   }
 </style>
 </head>
@@ -328,7 +332,7 @@
     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
       <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/>
     </svg>
-    <input type="text" id="search" placeholder="Buscar por nome, classe ou concentração..." oninput="render()" aria-label="Buscar medicamento">
+    <input type="text" id="search" placeholder="Buscar por nome, concentração ou REMUME..." oninput="render()" aria-label="Buscar medicamento">
   </div>
   <select id="fStatus" onchange="render()" aria-label="Filtrar por status">
     <option value="">Todos os status</option>
@@ -337,8 +341,8 @@
     <option value="low">Baixo estoque</option>
     <option value="restrict">Restrito</option>
   </select>
-  <select id="fClass" onchange="render()" aria-label="Filtrar por classe terapêutica">
-    <option value="">Todas as classes</option>
+  <select id="fRemume" onchange="render()" aria-label="Filtrar por classe REMUME">
+    <option value="">Todas as classes REMUME</option>
   </select>
   <div class="results-count" id="resultCount"></div>
 </div>
@@ -358,7 +362,7 @@
         <th>Denominação genérica</th>
         <th>Forma farmacêutica</th>
         <th>Concentração</th>
-        <th>Classe terapêutica</th>
+        <th>Classe REMUME</th>
         <th>Status</th>
       </tr>
     </thead>
@@ -367,117 +371,204 @@
 </div>
 
 <footer>
-  Farmácia — Sistema de consulta de estoque &nbsp;·&nbsp; Dados obtidos da planilha oficial
+  Farmácia — Sistema de consulta de estoque &nbsp;·&nbsp; Dados atualizados conforme REMUME
 </footer>
 
 <script>
 const data = [
-  ["CARBONATO DE CÁLCIO + COLECALCIFEROL","Comprimido","1.250 mg (500 mg cálcio) + 200 UI","Suplemento vitamínico e mineral","ok"],
-  ["GLIBENCLAMIDA","Comprimido","5 mg","Hipoglicemiante oral — Sulfaniluréia","ok"],
-  ["GLICLAZIDA","Comprimido lib. prolongada","30 mg","Hipoglicemiante oral — Sulfaniluréia","out"],
-  ["GLICLAZIDA","Comprimido lib. prolongada","60 mg","Hipoglicemiante oral — Sulfaniluréia","ok"],
-  ["INSULINA HUMANA NPH","Suspensão injetável","100 UI/mL","Insulina de ação intermediária","ok"],
-  ["INSULINA HUMANA NPH","Carpule 3mL","100 UI/mL","Insulina de ação intermediária","ok"],
-  ["INSULINA HUMANA REGULAR","Solução injetável","100 UI/mL","Insulina de ação rápida","ok"],
-  ["INSULINA HUMANA REGULAR","Carpule 3mL","100 UI/mL","Insulina de ação rápida","ok"],
-  ["LACTULOSE","Xarope","667 mg/mL","Laxante osmótico","out"],
-  ["METFORMINA (CLORIDRATO DE)","Comprimido","500 mg","Antidiabético oral","out"],
-  ["METFORMINA (CLORIDRATO DE)","Comprimido","850 mg","Antidiabético oral","ok"],
-  ["METOCLOPRAMIDA (CLORIDRATO DE)","Comprimido","10 mg","Antiemético / procinético","ok"],
-  ["METOCLOPRAMIDA (CLORIDRATO DE)","Solução oral","4 mg/mL","Antiemético / procinético","ok"],
-  ["NISTATINA","Suspensão oral","100.000 UI/mL","Antifúngico","ok"],
-  ["OMEPRAZOL","Cápsula","20 mg","Antiulceroso","ok"],
-  ["ONDANSETRONA (CLORIDRATO DE)","Comprimido orodispersível","4 mg","Antiemético e antinauseante","ok"],
-  ["ONDANSETRONA (CLORIDRATO DE)","Comprimido orodispersível","8 mg","Antiemético e antinauseante","ok"],
-  ["PALMITATO DE RETINOL","Cápsula mole","100.000 UI","Suplemento vitamínico","out"],
-  ["PALMITATO DE RETINOL","Cápsula mole","200.000 UI","Suplemento vitamínico","out"],
-  ["SAIS PARA REIDRATAÇÃO ORAL","Pó para solução oral","NaCl + glicose + KCl + citrato","Repositor hidroeletrolítico","ok"],
-  ["TIAMINA (CLORIDRATO DE)","Comprimido","300 mg","Suplemento vitamínico","out"],
-  ["ÁCIDO ACETILSALICÍLICO","Comprimido","100 mg","Antiagregante plaquetário","ok"],
-  ["ÁCIDO FÓLICO","Comprimido","5 mg","Suplemento vitamínico / antianêmico","ok"],
-  ["ÁCIDO FÓLICO","Solução oral","0,2 mg/mL","Suplemento vitamínico / antianêmico","ok"],
-  ["SULFATO FERROSO","Comprimido","40 mg","Suplemento vitamínico / antianêmico","ok"],
-  ["SULFATO FERROSO","Solução oral","25 mg/mL","Suplemento vitamínico / antianêmico","ok"],
-  ["VARFARINA","Comprimido","5 mg","Agentes antitrombóticos","ok"],
-  ["AMIODARONA (CLORIDRATO DE)","Comprimido","200 mg","Antiarrítmico","ok"],
-  ["ANLODIPINO","Comprimido","5 mg","Anti-hipertensivo — bloqueador do canal de cálcio","ok"],
-  ["ATENOLOL","Comprimido","50 mg","Anti-hipertensivo beta-bloqueador","ok"],
-  ["CAPTOPRIL","Comprimido","25 mg","Anti-hipertensivo inibidor da ECA","restrict"],
-  ["CARVEDILOL","Comprimido","12,5 mg","Anti-hipertensivo beta-bloqueador","ok"],
-  ["CARVEDILOL","Comprimido","6,25 mg","Anti-hipertensivo beta-bloqueador","ok"],
-  ["DIGOXINA","Comprimido","0,25 mg","Glicosídeo cardiotônico e antiarrítmico","ok"],
-  ["DOXAZOSINA (MESILATO DE)","Comprimido","2 mg","Anti-hipertensivo antagonista alfa-adrenérgico","ok"],
-  ["ENALAPRIL (MALEATO DE)","Comprimido","10 mg","Anti-hipertensivo inibidor da ECA","ok"],
-  ["ESPIRONOLACTONA","Comprimido","100 mg","Diurético poupador de potássio","ok"],
-  ["ESPIRONOLACTONA","Comprimido","25 mg","Diurético poupador de potássio","ok"],
-  ["FUROSEMIDA","Comprimido","40 mg","Anti-hipertensivo diurético de alça","ok"],
-  ["HIDROCLOROTIAZIDA","Comprimido","25 mg","Anti-hipertensivo diurético tiazídico","ok"],
-  ["ISOSSORBIDA (MONONITRATO DE)","Comprimido","20 mg","Antianginoso","ok"],
-  ["LOSARTANA POTÁSSICA","Comprimido","50 mg","Anti-hipertensivo — antagonista Angiotensina II","ok"],
-  ["METILDOPA","Comprimido","250 mg","Anti-hipertensivo agonista alfa-adrenérgico central","ok"],
-  ["METOPROLOL (SUCCINATO DE)","Comprimido lib. prolongada","50 mg","Antianginoso / anti-hipertensivo betabloqueador","ok"],
-  ["PROPAFENONA (CLORIDRATO DE)","Comprimido","300 mg","Antiarrítmico","ok"],
-  ["PROPRANOLOL (CLORIDRATO DE)","Comprimido","40 mg","Anti-hipertensivo beta-bloqueador","ok"],
-  ["SINVASTATINA","Comprimido","20 mg","Hipolipemiante","ok"],
-  ["VERAPAMIL (CLORIDRATO DE)","Comprimido","80 mg","Anti-hipertensivo — bloqueador do canal de cálcio","ok"],
-  ["ACICLOVIR","Creme","50 mg/g","Antiviral","ok"],
-  ["DEXAMETASONA","Creme","1 mg/g (0,1%)","Anti-inflamatório esteroidal","ok"],
-  ["IMIQUIMODE","Creme (sachê 250mg)","50 mg/g","Tratamento de verrugas genitais / HPV","ok"],
-  ["LIDOCAÍNA (CLORIDRATO DE)","Gel","20 mg/g (2%)","Anestésico de uso tópico","low"],
-  ["MICONAZOL (NITRATO DE)","Creme dermatológico","(2%) 20 mg/g","Antifúngico","out"],
-  ["SULFADIAZINA DE PRATA","Creme","10 mg/g (1%)","Antimicrobiano — Sulfonamidas","ok"],
-  ["ALGESTONA ACETOFENIDA + ENANTATO DE ESTRADIOL","Solução injetável","150 mg + 10 mg","Contraceptivo hormonal","ok"],
-  ["ENANTATO DE NORETISTERONA + VALERATO DE ESTRADIOL","Solução injetável","50 mg/mL + 5 mg/mL","Contraceptivo hormonal","ok"],
-  ["ESTRIOL","Creme vaginal","1 mg/g","Repositor hormonal — estrogênio","ok"],
-  ["ETINILESTRADIOL + LEVONORGESTREL","Comprimido","0,03 mg + 0,15 mg","Contraceptivo hormonal","ok"],
-  ["FINASTERIDA","Comprimido","5 mg","Urológico","ok"],
-  ["LEVONORGESTREL","Comprimido","0,75 mg","Contraceptivo hormonal","restrict"],
-  ["MEDROXIPROGESTERONA (ACETATO DE)","Comprimido","10 mg","Repositor hormonal progestogênio","ok"],
-  ["MEDROXIPROGESTERONA (ACETATO DE)","Solução injetável","150 mg/mL","Contraceptivo hormonal","ok"],
-  ["MEDROXIPROGESTERONA + ESTRADIOL CIPIONATO","Solução injetável","50 mg + 10 mg/mL","Contraceptivo hormonal","ok"],
-  ["METRONIDAZOL","Gel vaginal","100 mg/g (10%)","Antimicrobiano — Imidazólicos","ok"],
-  ["MICONAZOL (NITRATO DE)","Creme vaginal","(2%) 20 mg/g","Antifúngico","ok"],
-  ["NORETISTERONA","Comprimido","0,35 mg","Contraceptivo hormonal","ok"],
-  ["DEXAMETASONA","Comprimido","4 mg","Anti-inflamatório esteroidal","ok"],
-  ["LEVOTIROXINA SÓDICA","Comprimido","25 mcg","Repositor hormonal","ok"],
-  ["LEVOTIROXINA SÓDICA","Comprimido","50 mcg","Repositor hormonal","out"],
-  ["PREDNISOLOLA (FOSFATO SÓDICO DE)","Solução oral","3 mg/mL","Anti-inflamatório esteroidal","ok"],
-  ["PREDNISONA","Comprimido","5 mg","Anti-inflamatório esteroidal","ok"],
-  ["PREDNISONA","Comprimido","20 mg","Anti-inflamatório esteroidal","ok"],
-  ["PROPILTIOURACILA","Comprimido","100 mg","Antitireoideano","ok"],
-  ["ESPINHEIRA-SANTA","Cápsula","60–90 mg taninos totais (dose diária)","Fitoterápico","out"],
-  ["GUACO","Xarope","0,5–5 mg cumarina (dose diária)","Fitoterápico","ok"],
-  ["ISOFLAVONA-DE-SOJA","Cápsula","75 mg","Fitoterápico","out"],
-  ["ISOFLAVONA-DE-SOJA","Cápsula","150 mg","Fitoterápico","ok"],
-  ["ACICLOVIR","Comprimido","200 mg","Antiviral","ok"],
-  ["AMOXICILINA","Cápsula","500 mg","Antimicrobiano — Penicilinas","ok"],
-  ["AMOXICILINA","Suspensão oral","50 mg/mL","Antimicrobiano — Penicilinas","ok"],
-  ["AMOXICILINA + CLAVULANATO DE POTÁSSIO","Suspensão oral","50 mg/mL + 12,5 mg/mL","Antimicrobiano — Penicilinas","out"],
-  ["AMOXICILINA + CLAVULANATO DE POTÁSSIO","Comprimido","500 mg + 125 mg","Antimicrobiano — Penicilinas","out"],
-  ["AZITROMICINA","Comprimido","500 mg","Antimicrobiano — Macrolídeos","ok"],
-  ["AZITROMICINA","Pó para suspensão oral","40 mg/mL","Antimicrobiano — Macrolídeos","ok"],
-  ["BENZILPENICILINA BENZATINA","Suspensão injetável","1.200.000 UI","Antimicrobiano — Penicilinas","restrict"],
-  ["CEFALEXINA","Cápsula","500 mg","Antimicrobiano — Cefalosporinas","ok"],
-  ["CEFALEXINA","Suspensão oral","50 mg/mL","Antimicrobiano — Cefalosporinas","ok"],
-  ["CEFTRIAXONA","Pó para solução injetável","1 g","Antimicrobiano — Cefalosporinas","restrict"],
-  ["CIPROFLOXACINO","Comprimido","500 mg","Antimicrobiano — Fluorquinolonas","out"],
-  ["CLARITROMICINA","Comprimido revestido","500 mg","Antimicrobiano — Macrolídeos","ok"],
-  ["CLARITROMICINA","Suspensão oral","50 mg/mL","Antimicrobiano — Macrolídeos","ok"],
-  ["CLINDAMICINA (CLORIDRATO DE)","Cápsula","300 mg","Antimicrobiano — Lincosaminas","ok"],
-  ["CLOFAZIMINA","Comprimido","50 mg","Antimicrobiano — Hansenostático","restrict"],
-  ["CLOFAZIMINA","Comprimido","100 mg","Antimicrobiano — Hansenostático","restrict"],
+  ["CARBONATO DE CÁLCIO + COLECALCIFEROL","Comprimido","1.250 mg (500 mg de cálcio) + 200 UI","A Trato alimentar e metabolismo","ok"],
+  ["GLIBENCLAMIDA","Comprimido","5 mg","A Trato alimentar e metabolismo","ok"],
+  ["GLICLAZIDA","Comprimido de liberação prolongada","30 mg","A Trato alimentar e metabolismo","out"],
+  ["GLICLAZIDA","Comprimido de liberação prolongada","60 mg","A Trato alimentar e metabolismo","ok"],
+  ["INSULINA HUMANA NPH","Suspensão injetável","100 UI/mL","A Trato alimentar e metabolismo","ok"],
+  ["INSULINA HUMANA NPH","Carpule 3mL","100 UI/mL","A Trato alimentar e metabolismo","ok"],
+  ["INSULINA HUMANA REGULAR","Solução injetável","100 UI/mL","A Trato alimentar e metabolismo","ok"],
+  ["INSULINA HUMANA REGULAR","Carpule 3mL","100 UI/mL","A Trato alimentar e metabolismo","ok"],
+  ["LACTULOSE","Xarope","667 mg/mL","A Trato alimentar e metabolismo","out"],
+  ["METFORMINA (CLORIDRATO DE)","Comprimido","500 mg","A Trato alimentar e metabolismo","out"],
+  ["METFORMINA (CLORIDRATO DE)","Comprimido","850 mg","A Trato alimentar e metabolismo","ok"],
+  ["METOCLOPRAMIDA (CLORIDRATO DE)","Comprimido","10 mg","A Trato alimentar e metabolismo","ok"],
+  ["METOCLOPRAMIDA (CLORIDRATO DE)","Solução oral","4 mg/mL","A Trato alimentar e metabolismo","ok"],
+  ["NISTATINA","Suspensão oral","100.000 UI/mL","A Trato alimentar e metabolismo","ok"],
+  ["OMEPRAZOL","Cápsula","20 mg","A Trato alimentar e metabolismo","ok"],
+  ["ONDANSETRONA (CLORIDRATO DE)","Comprimido orodispersível","4 mg","A Trato alimentar e metabolismo","ok"],
+  ["ONDANSETRONA (CLORIDRATO DE)","Comprimido orodispersível","8 mg","A Trato alimentar e metabolismo","ok"],
+  ["PALMITATO DE RETINOL","Cápsula mole","100.000 UI","A Trato alimentar e metabolismo","restrict"],
+  ["PALMITATO DE RETINOL","Cápsula mole","200.000 UI","A Trato alimentar e metabolismo","restrict"],
+  ["SAIS PARA REIDRATAÇÃO ORAL","Pó para solução oral","cloreto de sódio, glicose anidra, cloreto de potássio, citrato de sódio di-hidratado","A Trato alimentar e metabolismo","ok"],
+  ["TIAMINA (CLORIDRATO DE)","Comprimido","300 mg","A Trato alimentar e metabolismo","out"],
+  ["ÁCIDO ACETILSALICÍLICO","Comprimido","100 mg","B Sangue e órgãos formadores de sangue","ok"],
+  ["ÁCIDO FÓLICO","Comprimido","5 mg","B Sangue e órgãos formadores de sangue","ok"],
+  ["ÁCIDO FÓLICO","Solução oral","0,2 mg/mL","B Sangue e órgãos formadores de sangue","ok"],
+  ["SULFATO FERROSO","Comprimido","40 mg","B Sangue e órgãos formadores de sangue","ok"],
+  ["SULFATO FERROSO","Solução oral","25 mg/mL","B Sangue e órgãos formadores de sangue","ok"],
+  ["VARFARINA","Comprimido","5 mg","B Sangue e órgãos formadores de sangue","ok"],
+  ["AMIODARONA (CLORIDRATO DE)","Comprimido","200 mg","C Sistema cardiovascular","ok"],
+  ["ANLODIPINO","Comprimido","5 mg","C Sistema cardiovascular","ok"],
+  ["ATENOLOL","Comprimido","50 mg","C Sistema cardiovascular","ok"],
+  ["CAPTOPRIL","Comprimido","25 mg","C Sistema cardiovascular","restrict"],
+  ["CARVEDILOL","Comprimido","12,5 mg","C Sistema cardiovascular","ok"],
+  ["CARVEDILOL","Comprimido","6,25 mg","C Sistema cardiovascular","ok"],
+  ["DIGOXINA","Comprimido","0,25 mg","C Sistema cardiovascular","ok"],
+  ["DOXAZOSINA (MESILATO DE)","Comprimido","2 mg","C Sistema cardiovascular","ok"],
+  ["ENALAPRIL (MALEATO DE)","Comprimido","10 mg","C Sistema cardiovascular","ok"],
+  ["ESPIRONOLACTONA","Comprimido","100 mg","C Sistema cardiovascular","ok"],
+  ["ESPIRONOLACTONA","Comprimido","25 mg","C Sistema cardiovascular","ok"],
+  ["FUROSEMIDA","Comprimido","40 mg","C Sistema cardiovascular","ok"],
+  ["HIDROCLOROTIAZIDA","Comprimido","25 mg","C Sistema cardiovascular","ok"],
+  ["ISOSSORBIDA (MONONITRATO DE)","Comprimido","20 mg","C Sistema cardiovascular","ok"],
+  ["LOSARTANA POTÁSSICA","Comprimido","50 mg","C Sistema cardiovascular","ok"],
+  ["METILDOPA","Comprimido","250 mg","C Sistema cardiovascular","ok"],
+  ["METOPROLOL (SUCCINATO DE)","Comprimido de liberação prolongada","50 mg","C Sistema cardiovascular","ok"],
+  ["PROPAFENONA (CLORIDRATO DE)","Comprimido","300 mg","C Sistema cardiovascular","ok"],
+  ["PROPRANOLOL (CLORIDRATO DE)","Comprimido","40 mg","C Sistema cardiovascular","ok"],
+  ["SINVASTATINA","Comprimido","20 mg","C Sistema cardiovascular","ok"],
+  ["VERAPAMIL (CLORIDRATO DE)","Comprimido","80 mg","C Sistema cardiovascular","ok"],
+  ["ACICLOVIR","Creme","50 mg/g","D Dermatológicos","ok"],
+  ["DEXAMETASONA","Creme","1 mg/g (0,1%)","D Dermatológicos","ok"],
+  ["IMIQUIMODE","Creme (Sachê com 250mg)","50mg/g","D Dermatológicos","ok"],
+  ["LIDOCAÍNA (CLORIDRATO DE)","Gel","20 mg/g (2%)","D Dermatológicos","low"],
+  ["MICONAZOL (NITRATO DE)","Creme dermatológico","(2%) 20 mg/g","D Dermatológicos","out"],
+  ["SULFADIAZINA DE PRATA","Creme","10 mg/g (1%)","D Dermatológicos","ok"],
+  ["ALGESTONA ACETOFENIDA + ENANTATO DE ESTRADIOL","Solução injetável","150mg + 10mg, Ampola de 1mL","G Sistema geniturinário e hormônios sexuais","ok"],
+  ["ENANTATO DE NORETISTERONA + VALERATO DE ESTRADIOL","Solução injetável","50 mg/mL + 5 mg/mL","G Sistema geniturinário e hormônios sexuais","ok"],
+  ["ESTRIOL","Creme vaginal","1 mg/g","G Sistema geniturinário e hormônios sexuais","ok"],
+  ["ETINILESTRADIOL + LEVONORGESTREL","Comprimido","0,03 mg + 0,15 mg","G Sistema geniturinário e hormônios sexuais","ok"],
+  ["FINASTERIDA","Comprimido","5 mg","G Sistema geniturinário e hormônios sexuais","ok"],
+  ["LEVONORGESTREL","Comprimido","0,75 mg","G Sistema geniturinário e hormônios sexuais","ok"],
+  ["MEDROXIPROGESTERONA (ACETATO DE)","Comprimido","10 mg","G Sistema geniturinário e hormônios sexuais","ok"],
+  ["MEDROXIPROGESTERONA (ACETATO DE)","Solução injetável","150 mg/mL","G Sistema geniturinário e hormônios sexuais","ok"],
+  ["MEDROXIPROGESTERONA (ACETATO DE) + ESTRADIOL (CIPIONATO DE)","Solução injetável","50MG+10MG/ML, AMPOLA 0,5ML","G Sistema geniturinário e hormônios sexuais","ok"],
+  ["METRONIDAZOL","Gel vaginal","100 mg/g (10%)","G Sistema geniturinário e hormônios sexuais","ok"],
+  ["MICONAZOL (NITRATO DE)","Creme vaginal","(2%) 20 mg/g","G Sistema geniturinário e hormônios sexuais","ok"],
+  ["NORETISTERONA","Comprimido","0,35 mg","G Sistema geniturinário e hormônios sexuais","ok"],
+  ["DEXAMETASONA","Comprimido","4 mg","H Preparações hormonais sistêmicas, excluindo hormônios sexuais e insulinas","ok"],
+  ["LEVOTIROXINA SÓDICA","Comprimido","25 mcg","H Preparações hormonais sistêmicas, excluindo hormônios sexuais e insulinas","ok"],
+  ["LEVOTIROXINA SÓDICA","Comprimido","50 mcg","H Preparações hormonais sistêmicas, excluindo hormônios sexuais e insulinas","out"],
+  ["PREDNISOLOLA (FOSFATO SÓDICO DE)","Solução oral","3 mg/mL","H Preparações hormonais sistêmicas, excluindo hormônios sexuais e insulinas","ok"],
+  ["PREDNISONA","Comprimido","5 mg","H Preparações hormonais sistêmicas, excluindo hormônios sexuais e insulinas","ok"],
+  ["PREDNISONA","Comprimido","20 mg","H Preparações hormonais sistêmicas, excluindo hormônios sexuais e insulinas","ok"],
+  ["PROPILTIOURACILA","Comprimido","100 mg","H Preparações hormonais sistêmicas, excluindo hormônios sexuais e insulinas","ok"],
+  ["ESPINHEIRA-SANTA (Maytenus ilicifolia Mart. ex Reissek)","Cápsula","60 a 90 mg taninos totais expressos em pirogalol (dose diária)","H* Fitoterápicos","out"],
+  ["GUACO (Mikania glomerata Spreng.)","Xarope","0,5 a 5 mg de cumarina (dose diária)","H* Fitoterápicos","ok"],
+  ["ISOFLAVONA-DE-SOJA","Cápsula","75 mg","H* Fitoterápicos","out"],
+  ["ISOFLAVONA-DE-SOJA","Cápsula","150 mg","H* Fitoterápicos","ok"],
+  ["ACICLOVIR","Comprimido","200 mg","J Anti-infecciosos para uso sistêmico","ok"],
+  ["AMOXICILINA","Cápsula","500 mg","J Anti-infecciosos para uso sistêmico","ok"],
+  ["AMOXICILINA","Suspensão oral","50 mg/mL","J Anti-infecciosos para uso sistêmico","ok"],
+  ["AMOXICILINA + CLAVULANATO DE POTÁSSIO","Suspensão oral","50 mg/mL + 12,5 mg/mL","J Anti-infecciosos para uso sistêmico","out"],
+  ["AMOXICILINA + CLAVULANATO DE POTÁSSIO","Comprimido","500 mg + 125 mg","J Anti-infecciosos para uso sistêmico","out"],
+  ["AZITROMICINA","Comprimido","500 mg","J Anti-infecciosos para uso sistêmico","ok"],
+  ["AZITROMICINA","Pó para suspensão oral","40 mg/mL","J Anti-infecciosos para uso sistêmico","ok"],
+  ["BENZILPENICILINA BENZATINA","Suspensão injetável ou pó para suspensão injetável","1.200.000 UI","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["CEFALEXINA","Cápsula","500 mg","J Anti-infecciosos para uso sistêmico","ok"],
+  ["CEFALEXINA","Suspensão oral","50 mg/mL","J Anti-infecciosos para uso sistêmico","ok"],
+  ["CEFTRIAXONA","Pó para solução injetável","1 g","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["CIPROFLOXACINO","Comprimido","500 mg","J Anti-infecciosos para uso sistêmico","out"],
+  ["CLARITROMICINA","Comprimido revestido","500 mg","J Anti-infecciosos para uso sistêmico","ok"],
+  ["CLARITROMICINA","Suspensão oral","50 mg/mL","J Anti-infecciosos para uso sistêmico","ok"],
+  ["CLINDAMICINA (CLORIDRATO DE)","Cápsula","300 mg","J Anti-infecciosos para uso sistêmico","ok"],
+  ["CLOFAZIMINA","Comprimido","50 mg","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["CLOFAZIMINA","Comprimido","100 mg","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["DAPSONA","Comprimido","50 mg","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["DAPSONA","Comprimido","100 mg","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["ISONIAZIDA","Comprimido","100 mg","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["ISONIAZIDA","Comprimido","300 mg","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["METRONIDAZOL","Comprimido","250 mg","J Anti-infecciosos para uso sistêmico","ok"],
+  ["NITROFURANTOÍNA","Cápsula","100 mg","J Anti-infecciosos para uso sistêmico","out"],
+  ["OSELTAMIVIR (FOSFATO DE)","Cápsula","45 mg","J Anti-infecciosos para uso sistêmico","ok"],
+  ["OSELTAMIVIR (FOSFATO DE)","Cápsula","75 mg","J Anti-infecciosos para uso sistêmico","ok"],
+  ["OSELTAMIVIR (FOSFATO DE)","Cápsula","30 mg","J Anti-infecciosos para uso sistêmico","ok"],
+  ["PIRAZINAMIDA","Comprimido","500 mg","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["PIRAZINAMIDA","Suspensão oral","30 mg/mL-3%","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["PIRAZINAMIDA","Comprimido dispersível","150 mg","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["RIFAMPICINA","Cápsula","300 mg","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["RIFAMPICINA","Cápsula","150 mg","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["RIFAMPICINA","Comprimido","150 mg + 75 mg","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["RIFAMPICINA + ISONIAZIDA","Comprimido","300 mg +150 mg","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["RIFAMPICINA + ISONIAZIDA","Comprimido dispersível","75 mg + 50 mg","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["RIFAMPICINA + ISONIAZIDA + PIRAZINAMIDA","Comprimido dispersível","75 mg + 50 mg + 150 mg","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["RIFAMPICINA + ISONIAZIDA + PIRAZINAMIDA + CLORIDRATO DE ETAMBUTOL","Comprimido","150 mg + 75 mg+ 400 mg + 275 mg","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["SULFADIAZINA","Comprimido","500 mg","J Anti-infecciosos para uso sistêmico","restrict"],
+  ["SULFAMETOXAZOL + TRIMETOPRIMA","Suspensão oral","40 mg/mL +8 mg/mL","J Anti-infecciosos para uso sistêmico","ok"],
+  ["SULFAMETOXAZOL + TRIMETOPRIMA","Comprimido","400 mg + 80 mg","J Anti-infecciosos para uso sistêmico","ok"],
+  ["ALENDRONATO DE SÓDIO","Comprimido","70 mg","M Sistema musculoesquelético","ok"],
+  ["ALOPURINOL","Comprimido","100 mg","M Sistema musculoesquelético","ok"],
+  ["ALOPURINOL","Comprimido","300 mg","M Sistema musculoesquelético","ok"],
+  ["IBUPROFENO","Comprimido","300 mg","M Sistema musculoesquelético","ok"],
+  ["IBUPROFENO","Suspensão oral","50 mg/mL","M Sistema musculoesquelético","ok"],
+  ["ÁCIDO VALPRÓICO (VALPROATO DE SÓDIO)","Xarope","50 mg/mL","N Sistema nervoso","ok"],
+  ["ÁCIDO VALPRÓICO (VALPROATO DE SÓDIO)","Comprimido","500 mg","N Sistema nervoso","ok"],
+  ["AMITRIPTILINA","Comprimido","25 mg","N Sistema nervoso","ok"],
+  ["BIPERIDENO (CLORIDRATO DE)","Comprimido","2 mg","N Sistema nervoso","ok"],
+  ["BUPROPIONA (CLORIDRATO DE)","Comprimido de liberação prolongada","150 mg","N Sistema nervoso","ok"],
+  ["CARBAMAZEPINA","Comprimido","200 mg","N Sistema nervoso","ok"],
+  ["CARBAMAZEPINA","Suspensão Oral","20 mg/mL","N Sistema nervoso","ok"],
+  ["CARBONATO DE LÍTIO","Comprimido","300 mg","N Sistema nervoso","ok"],
+  ["CLOMIPRAMINA (CLORIDRATO DE)","Comprimido","25 mg","N Sistema nervoso","ok"],
+  ["CLONAZEPAM","Solução oral","2,5 mg/mL","N Sistema nervoso","ok"],
+  ["CLORPROMAZINA (CLORIDRATO DE)","Comprimido","100 mg","N Sistema nervoso","ok"],
+  ["CLORPROMAZINA (CLORIDRATO DE)","Comprimido","25 mg","N Sistema nervoso","ok"],
+  ["CLORPROMAZINA (CLORIDRATO DE)","Solução oral","40 mg/mL","N Sistema nervoso","out"],
+  ["DIAZEPAM","Comprimido","10 mg","N Sistema nervoso","ok"],
+  ["DIAZEPAM","Comprimido","5 mg","N Sistema nervoso","ok"],
+  ["DIPIRONA SÓDICA","Comprimido","500 mg","N Sistema nervoso","ok"],
+  ["FENITOÍNA","Comprimido","100 mg","N Sistema nervoso","ok"],
+  ["FENOBARBITAL","Cápsula","100mg","N Sistema nervoso","ok"],
+  ["FENOBARBITAL","Solução oral","40 mg/mL","N Sistema nervoso","ok"],
+  ["FLUOXETINA (CLORIDRATO DE)","Cápsula ou Comprimido","20 mg","N Sistema nervoso","ok"],
+  ["HALOPERIDOL","Solução oral","2 mg/mL","N Sistema nervoso","ok"],
+  ["HALOPERIDOL","Comprimido","1 mg","N Sistema nervoso","ok"],
+  ["HALOPERIDOL","Comprimido","5 mg","N Sistema nervoso","ok"],
+  ["LEVODOPA + BENSERAZIDA","Comprimido birranhurado (BD)","100 mg + 25 mg","N Sistema nervoso","ok"],
+  ["LEVODOPA + BENSERAZIDA","Comprimido dispersível","100 mg + 25 mg","N Sistema nervoso","ok"],
+  ["LEVODOPA + BENSERAZIDA","Cápsula (HBS)","100 mg + 25 mg","N Sistema nervoso","ok"],
+  ["LEVODOPA + BENSERAZIDA","Comprimido de liberação dupla (DR)","200 mg + 50 mg","N Sistema nervoso","ok"],
+  ["LEVODOPA + CARBIDOPA","Comprimido","250 mg + 25 mg","N Sistema nervoso","out"],
+  ["NICOTINA","Adesivo transdérmico","21 mg","N Sistema nervoso","ok"],
+  ["NICOTINA","Adesivo transdérmico","14 mg","N Sistema nervoso","ok"],
+  ["NICOTINA","Adesivo transdérmico","7 mg","N Sistema nervoso","ok"],
+  ["NICOTINA","Goma de mascar","2 mg","N Sistema nervoso","out"],
+  ["NICOTINA","Pastilha","2 mg","N Sistema nervoso","out"],
+  ["NORTRIPTILINA (CLORIDRATO DE)","Cápsula","25 mg","N Sistema nervoso","ok"],
+  ["PARACETAMOL","Solução oral","200 mg/mL","N Sistema nervoso","ok"],
+  ["PARACETAMOL","Comprimido","500 mg","N Sistema nervoso","ok"],
+  ["ALBENDAZOL","Comprimido","400 mg","P Produtos antiparasitários, inseticidas e repelentes","ok"],
+  ["ALBENDAZOL","Suspensão oral","40 mg/mL","P Produtos antiparasitários, inseticidas e repelentes","ok"],
+  ["ANTIMONIATO DE MEGLUMINA","Solução injetável","300 mg/mL","P Produtos antiparasitários, inseticidas e repelentes","restrict"],
+  ["ARTEMETER + LUMEFANTRINA","Comprimido","20 mg + 120 mg","P Produtos antiparasitários, inseticidas e repelentes","restrict"],
+  ["ARTESUNATO","Pó para solução injetável","60 mg/mL","P Produtos antiparasitários, inseticidas e repelentes","restrict"],
+  ["BENZOILMETRONIDAZOL","Suspensão oral","40 mg/mL","P Produtos antiparasitários, inseticidas e repelentes","ok"],
+  ["CLOROQUINA (DIFOSFATO DE)","Comprimido","150 mg","P Produtos antiparasitários, inseticidas e repelentes","restrict"],
+  ["IVERMECTINA","Comprimido","6 mg","P Produtos antiparasitários, inseticidas e repelentes","ok"],
+  ["PERMETRINA","Loção","10 mg/g (1%)","P Produtos antiparasitários, inseticidas e repelentes","out"],
+  ["PERMETRINA","Loção","50 mg/g (5%)","P Produtos antiparasitários, inseticidas e repelentes","out"],
+  ["PIRIMETAMINA","Comprimido","25 mg","P Produtos antiparasitários, inseticidas e repelentes","restrict"],
+  ["PRIMAQUINA (DIFOSFATO DE)","Comprimido","15 mg","P Produtos antiparasitários, inseticidas e repelentes","restrict"],
+  ["PRIMAQUINA (DIFOSFATO DE)","Comprimido","5 mg","P Produtos antiparasitários, inseticidas e repelentes","restrict"],
+  ["TAFENOQUINA (SUCCINATO DE)","Comprimido","150 mg","P Produtos antiparasitários, inseticidas e repelentes","restrict"],
+  ["BECLOMETASONA (DIPROPIONATO DE)","Solução para inalação oral","250 mcg/dose","R Sistema respiratório","ok"],
+  ["BUDESONIDA","Suspensão para inalação nasal","32 mcg/dose","R Sistema respiratório","out"],
+  ["BUDESONIDA","Suspensão para inalação nasal","50 mcg/dose","R Sistema respiratório","ok"],
+  ["BUDESONIDA","Suspensão para inalação nasal","64 mcg/dose","R Sistema respiratório","ok"],
+  ["CLORETO DE SÓDIO","Solução estéril não injetável 250 mL","0,154 mEq/mL (0,9%)","R Sistema respiratório","restrict"],
+  ["CLORETO DE SÓDIO","Solução nasal","9 mg/mL (0,9%)","R Sistema respiratório","ok"],
+  ["LORATADINA","Xarope","1 mg/mL","R Sistema respiratório","ok"],
+  ["LORATADINA","Comprimido","10 mg","R Sistema respiratório","out"],
+  ["PROMETAZINA (CLORIDRATO DE)","Comprimido","25 mg","R Sistema respiratório","ok"],
+  ["SALBUTAMOL (SULFATO DE)","Aerossol oral","100 mcg/dose","R Sistema respiratório","ok"],
 ];
 
 const statusLabel = { ok:"Disponível", out:"Em falta", low:"Baixo estoque", restrict:"Restrito" };
 const statusClass = { ok:"badge-ok", out:"badge-out", low:"badge-low", restrict:"badge-restrict" };
 
-// Populate class filter
-const classes = [...new Set(data.map(r => r[3]))].sort();
-const sel = document.getElementById('fClass');
-classes.forEach(c => {
+// Populate REMUME filter
+const remumes = [...new Set(data.map(r => r[3]))].sort();
+const selRemume = document.getElementById('fRemume');
+remumes.forEach(r => {
   const o = document.createElement('option');
-  o.value = c; o.textContent = c;
-  sel.appendChild(o);
+  o.value = r; o.textContent = r;
+  selRemume.appendChild(o);
 });
 
 // Stats
@@ -495,13 +586,13 @@ document.getElementById('dataBadge').textContent =
 function render() {
   const q  = document.getElementById('search').value.toLowerCase();
   const fs = document.getElementById('fStatus').value;
-  const fc = document.getElementById('fClass').value;
+  const fr = document.getElementById('fRemume').value;
 
   const filtered = data.filter(r => {
     const matchQ  = !q  || r[0].toLowerCase().includes(q) || r[3].toLowerCase().includes(q) || r[2].toLowerCase().includes(q);
     const matchS  = !fs || r[4] === fs;
-    const matchC  = !fc || r[3] === fc;
-    return matchQ && matchS && matchC;
+    const matchR  = !fr || r[3] === fr;
+    return matchQ && matchS && matchR;
   });
 
   document.getElementById('resultCount').textContent =
@@ -518,7 +609,7 @@ function render() {
       <td class="td-name">${r[0]}</td>
       <td class="td-form">${r[1]}</td>
       <td class="td-conc">${r[2]}</td>
-      <td class="td-class">${r[3]}</td>
+      <td class="td-remume">${r[3]}</td>
       <td><span class="badge ${statusClass[r[4]]}"><span class="badge-dot"></span>${statusLabel[r[4]]}</span></td>
     </tr>`).join('');
 }
