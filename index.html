@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estoque — Farmácia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green: #1D9E75; --green-bg: #EAF3DE; --green-text: #3B6D11;
+    --red: #D85A30; --red-bg: #FCEBEB; --red-text: #A32D2D;
+    --amber: #BA7517; --amber-bg: #FAEEDA; --amber-text: #854F0B;
+    --blue: #185FA5; --blue-bg: #E6F1FB; --blue-text: #0C447C;
+    --border: #e2e0d8;
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --text: #1a1a18;
+    --muted: #6b6a65;
+    --accent: #1D9E75;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  .page-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+  }
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem 0 1.25rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .header-left h1 {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.4px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-left h1 svg { color: var(--accent); }
+  .header-left p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+  .update-badge {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+  }
+
+  /* STATS */
+  .stats-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+  }
+  .stats-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    gap: 0;
+  }
+  .stat {
+    flex: 1;
+    padding: 1rem 1.5rem 1rem 0;
+    border-right: 1px solid var(--border);
+  }
+  .stat:last-child { border-right: none; }
+  .stat-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  .stat-value.green { color: var(--green); }
+  .stat-value.red   { color: var(--red); }
+  .stat-value.amber { color: var(--amber); }
+  .stat-value.blue  { color: var(--blue); }
+
+  /* CONTROLS */
+  .controls-wrap {
+    max-width: 1200px;
+    margin: 1.5rem auto 1rem;
+    padding: 0 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  .search-box {
+    position: relative;
+    flex: 1;
+    min-width: 220px;
+  }
+  .search-box svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 9px 12px 9px 36px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-box input:focus { border-color: var(--accent); }
+  .search-box input::placeholder { color: var(--muted); }
+
+  select {
+    padding: 9px 32px 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%236b6a65' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    transition: border-color 0.15s;
+  }
+  select:focus { border-color: var(--accent); }
+
+  .results-count {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-left: auto;
+  }
+
+  /* TABLE */
+  .table-wrap {
+    max-width: 1200px;
+    margin: 0 auto 3rem;
+    padding: 0 2rem;
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  thead th {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #f9f8f5; }
+  td {
+    padding: 11px 14px;
+    vertical-align: top;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .td-name { font-weight: 500; font-size: 13px; max-width: 260px; }
+  .td-form { color: var(--muted); font-size: 12px; }
+  .td-conc { font-family: 'DM Mono', monospace; font-size: 12px; white-space: nowrap; }
+  .td-class { color: var(--muted); font-size: 12px; max-width: 220px; }
+
+  /* BADGES */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .badge-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .badge-ok     { background: var(--green-bg); color: var(--green-text); }
+  .badge-ok .badge-dot     { background: var(--green-text); }
+  .badge-out    { background: var(--red-bg);   color: var(--red-text); }
+  .badge-out .badge-dot    { background: var(--red-text); }
+  .badge-low    { background: var(--amber-bg); color: var(--amber-text); }
+  .badge-low .badge-dot    { background: var(--amber-text); }
+  .badge-restrict { background: var(--blue-bg); color: var(--blue-text); }
+  .badge-restrict .badge-dot { background: var(--blue-text); }
+
+  /* EMPTY */
+  .empty-row td {
+    text-align: center;
+    padding: 3rem;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  /* LEGEND */
+  .legend {
+    max-width: 1200px;
+    margin: 0 auto 2rem;
+    padding: 0 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .legend span { font-size: 12px; color: var(--muted); margin-right: 4px; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    padding: 1rem 2rem;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  @media (max-width: 640px) {
+    .header-inner, .stats-inner { flex-direction: column; gap: 0.75rem; }
+    .stat { border-right: none; border-bottom: 1px solid var(--border); padding: 0.75rem 0; }
+    .stat:last-child { border-bottom: none; }
+    .page-header, .stats-bar, .controls-wrap, .table-wrap, .legend { padding-left: 1rem; padding-right: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <div class="header-inner">
+    <div class="header-left">
+      <h1>
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8M8 12h8"/>
+        </svg>
+        Estoque — Farmácia
+      </h1>
+      <p>Consulta de medicamentos, concentrações e disponibilidade</p>
+    </div>
+    <div class="update-badge" id="dataBadge">Atualizado em —</div>
+  </div>
+</header>
+
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat">
+      <div class="stat-label">Total de itens</div>
+      <div class="stat-value" id="s-total">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Disponíveis</div>
+      <div class="stat-value green" id="s-ok">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Em falta</div>
+      <div class="stat-value red" id="s-out">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Baixo estoque</div>
+      <div class="stat-value amber" id="s-low">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Restritos</div>
+      <div class="stat-value blue" id="s-rest">—</div>
+    </div>
+  </div>
+</div>
+
+<div class="controls-wrap">
+  <div class="search-box">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/>
+    </svg>
+    <input type="text" id="search" placeholder="Buscar por nome, classe ou concentração..." oninput="render()" aria-label="Buscar medicamento">
+  </div>
+  <select id="fStatus" onchange="render()" aria-label="Filtrar por status">
+    <option value="">Todos os status</option>
+    <option value="ok">Disponível</option>
+    <option value="out">Em falta</option>
+    <option value="low">Baixo estoque</option>
+    <option value="restrict">Restrito</option>
+  </select>
+  <select id="fClass" onchange="render()" aria-label="Filtrar por classe terapêutica">
+    <option value="">Todas as classes</option>
+  </select>
+  <div class="results-count" id="resultCount"></div>
+</div>
+
+<div class="legend">
+  <span>Legenda:</span>
+  <span class="badge badge-ok"><span class="badge-dot"></span>Disponível</span>
+  <span class="badge badge-out"><span class="badge-dot"></span>Em falta</span>
+  <span class="badge badge-low"><span class="badge-dot"></span>Baixo estoque</span>
+  <span class="badge badge-restrict"><span class="badge-dot"></span>Restrito</span>
+</div>
+
+<div class="table-wrap">
+  <table role="table" aria-label="Tabela de estoque de medicamentos">
+    <thead>
+      <tr>
+        <th>Denominação genérica</th>
+        <th>Forma farmacêutica</th>
+        <th>Concentração</th>
+        <th>Classe terapêutica</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<footer>
+  Farmácia — Sistema de consulta de estoque &nbsp;·&nbsp; Dados obtidos da planilha oficial
+</footer>
+
+<script>
+const data = [
+  ["CARBONATO DE CÁLCIO + COLECALCIFEROL","Comprimido","1.250 mg (500 mg cálcio) + 200 UI","Suplemento vitamínico e mineral","ok"],
+  ["GLIBENCLAMIDA","Comprimido","5 mg","Hipoglicemiante oral — Sulfaniluréia","ok"],
+  ["GLICLAZIDA","Comprimido lib. prolongada","30 mg","Hipoglicemiante oral — Sulfaniluréia","ok"],
+  ["GLICLAZIDA","Comprimido lib. prolongada","60 mg","Hipoglicemiante oral — Sulfaniluréia","ok"],
+  ["INSULINA HUMANA NPH","Suspensão injetável","100 UI/mL","Insulina de ação intermediária","ok"],
+  ["INSULINA HUMANA NPH","Carpule 3mL","100 UI/mL","Insulina de ação intermediária","ok"],
+  ["INSULINA HUMANA REGULAR","Solução injetável","100 UI/mL","Insulina de ação rápida","ok"],
+  ["INSULINA HUMANA REGULAR","Carpule 3mL","100 UI/mL","Insulina de ação rápida","ok"],
+  ["LACTULOSE","Xarope","667 mg/mL","Laxante osmótico","out"],
+  ["METFORMINA (CLORIDRATO DE)","Comprimido","500 mg","Antidiabético oral","out"],
+  ["METFORMINA (CLORIDRATO DE)","Comprimido","850 mg","Antidiabético oral","ok"],
+  ["METOCLOPRAMIDA (CLORIDRATO DE)","Comprimido","10 mg","Antiemético / procinético","ok"],
+  ["METOCLOPRAMIDA (CLORIDRATO DE)","Solução oral","4 mg/mL","Antiemético / procinético","ok"],
+  ["NISTATINA","Suspensão oral","100.000 UI/mL","Antifúngico","ok"],
+  ["OMEPRAZOL","Cápsula","20 mg","Antiulceroso","ok"],
+  ["ONDANSETRONA (CLORIDRATO DE)","Comprimido orodispersível","4 mg","Antiemético e antinauseante","ok"],
+  ["ONDANSETRONA (CLORIDRATO DE)","Comprimido orodispersível","8 mg","Antiemético e antinauseante","ok"],
+  ["PALMITATO DE RETINOL","Cápsula mole","100.000 UI","Suplemento vitamínico","out"],
+  ["PALMITATO DE RETINOL","Cápsula mole","200.000 UI","Suplemento vitamínico","out"],
+  ["SAIS PARA REIDRATAÇÃO ORAL","Pó para solução oral","NaCl + glicose + KCl + citrato","Repositor hidroeletrolítico","ok"],
+  ["TIAMINA (CLORIDRATO DE)","Comprimido","300 mg","Suplemento vitamínico","out"],
+  ["ÁCIDO ACETILSALICÍLICO","Comprimido","100 mg","Antiagregante plaquetário","ok"],
+  ["ÁCIDO FÓLICO","Comprimido","5 mg","Suplemento vitamínico / antianêmico","ok"],
+  ["ÁCIDO FÓLICO","Solução oral","0,2 mg/mL","Suplemento vitamínico / antianêmico","ok"],
+  ["SULFATO FERROSO","Comprimido","40 mg","Suplemento vitamínico / antianêmico","ok"],
+  ["SULFATO FERROSO","Solução oral","25 mg/mL","Suplemento vitamínico / antianêmico","ok"],
+  ["VARFARINA","Comprimido","5 mg","Agentes antitrombóticos","ok"],
+  ["AMIODARONA (CLORIDRATO DE)","Comprimido","200 mg","Antiarrítmico","ok"],
+  ["ANLODIPINO","Comprimido","5 mg","Anti-hipertensivo — bloqueador do canal de cálcio","ok"],
+  ["ATENOLOL","Comprimido","50 mg","Anti-hipertensivo beta-bloqueador","ok"],
+  ["CAPTOPRIL","Comprimido","25 mg","Anti-hipertensivo inibidor da ECA","restrict"],
+  ["CARVEDILOL","Comprimido","12,5 mg","Anti-hipertensivo beta-bloqueador","ok"],
+  ["CARVEDILOL","Comprimido","6,25 mg","Anti-hipertensivo beta-bloqueador","ok"],
+  ["DIGOXINA","Comprimido","0,25 mg","Glicosídeo cardiotônico e antiarrítmico","ok"],
+  ["DOXAZOSINA (MESILATO DE)","Comprimido","2 mg","Anti-hipertensivo antagonista alfa-adrenérgico","ok"],
+  ["ENALAPRIL (MALEATO DE)","Comprimido","10 mg","Anti-hipertensivo inibidor da ECA","ok"],
+  ["ESPIRONOLACTONA","Comprimido","100 mg","Diurético poupador de potássio","ok"],
+  ["ESPIRONOLACTONA","Comprimido","25 mg","Diurético poupador de potássio","ok"],
+  ["FUROSEMIDA","Comprimido","40 mg","Anti-hipertensivo diurético de alça","ok"],
+  ["HIDROCLOROTIAZIDA","Comprimido","25 mg","Anti-hipertensivo diurético tiazídico","ok"],
+  ["ISOSSORBIDA (MONONITRATO DE)","Comprimido","20 mg","Antianginoso","ok"],
+  ["LOSARTANA POTÁSSICA","Comprimido","50 mg","Anti-hipertensivo — antagonista Angiotensina II","ok"],
+  ["METILDOPA","Comprimido","250 mg","Anti-hipertensivo agonista alfa-adrenérgico central","ok"],
+  ["METOPROLOL (SUCCINATO DE)","Comprimido lib. prolongada","50 mg","Antianginoso / anti-hipertensivo betabloqueador","ok"],
+  ["PROPAFENONA (CLORIDRATO DE)","Comprimido","300 mg","Antiarrítmico","ok"],
+  ["PROPRANOLOL (CLORIDRATO DE)","Comprimido","40 mg","Anti-hipertensivo beta-bloqueador","ok"],
+  ["SINVASTATINA","Comprimido","20 mg","Hipolipemiante","ok"],
+  ["VERAPAMIL (CLORIDRATO DE)","Comprimido","80 mg","Anti-hipertensivo — bloqueador do canal de cálcio","ok"],
+  ["ACICLOVIR","Creme","50 mg/g","Antiviral","ok"],
+  ["DEXAMETASONA","Creme","1 mg/g (0,1%)","Anti-inflamatório esteroidal","ok"],
+  ["IMIQUIMODE","Creme (sachê 250mg)","50 mg/g","Tratamento de verrugas genitais / HPV","ok"],
+  ["LIDOCAÍNA (CLORIDRATO DE)","Gel","20 mg/g (2%)","Anestésico de uso tópico","low"],
+  ["MICONAZOL (NITRATO DE)","Creme dermatológico","(2%) 20 mg/g","Antifúngico","out"],
+  ["SULFADIAZINA DE PRATA","Creme","10 mg/g (1%)","Antimicrobiano — Sulfonamidas","ok"],
+  ["ALGESTONA ACETOFENIDA + ENANTATO DE ESTRADIOL","Solução injetável","150 mg + 10 mg","Contraceptivo hormonal","ok"],
+  ["ENANTATO DE NORETISTERONA + VALERATO DE ESTRADIOL","Solução injetável","50 mg/mL + 5 mg/mL","Contraceptivo hormonal","ok"],
+  ["ESTRIOL","Creme vaginal","1 mg/g","Repositor hormonal — estrogênio","ok"],
+  ["ETINILESTRADIOL + LEVONORGESTREL","Comprimido","0,03 mg + 0,15 mg","Contraceptivo hormonal","ok"],
+  ["FINASTERIDA","Comprimido","5 mg","Urológico","ok"],
+  ["LEVONORGESTREL","Comprimido","0,75 mg","Contraceptivo hormonal","restrict"],
+  ["MEDROXIPROGESTERONA (ACETATO DE)","Comprimido","10 mg","Repositor hormonal progestogênio","ok"],
+  ["MEDROXIPROGESTERONA (ACETATO DE)","Solução injetável","150 mg/mL","Contraceptivo hormonal","ok"],
+  ["MEDROXIPROGESTERONA + ESTRADIOL CIPIONATO","Solução injetável","50 mg + 10 mg/mL","Contraceptivo hormonal","ok"],
+  ["METRONIDAZOL","Gel vaginal","100 mg/g (10%)","Antimicrobiano — Imidazólicos","ok"],
+  ["MICONAZOL (NITRATO DE)","Creme vaginal","(2%) 20 mg/g","Antifúngico","ok"],
+  ["NORETISTERONA","Comprimido","0,35 mg","Contraceptivo hormonal","ok"],
+  ["DEXAMETASONA","Comprimido","4 mg","Anti-inflamatório esteroidal","ok"],
+  ["LEVOTIROXINA SÓDICA","Comprimido","25 mcg","Repositor hormonal","ok"],
+  ["LEVOTIROXINA SÓDICA","Comprimido","50 mcg","Repositor hormonal","out"],
+  ["PREDNISOLONA (FOSFATO SÓDICO DE)","Solução oral","3 mg/mL","Anti-inflamatório esteroidal","ok"],
+  ["PREDNISONA","Comprimido","5 mg","Anti-inflamatório esteroidal","ok"],
+  ["PREDNISONA","Comprimido","20 mg","Anti-inflamatório esteroidal","ok"],
+  ["PROPILTIOURACILA","Comprimido","100 mg","Antitireoideano","ok"],
+  ["ESPINHEIRA-SANTA","Cápsula","60–90 mg taninos totais (dose diária)","Fitoterápico","out"],
+  ["GUACO","Xarope","0,5–5 mg cumarina (dose diária)","Fitoterápico","ok"],
+  ["ISOFLAVONA-DE-SOJA","Cápsula","75 mg","Fitoterápico","out"],
+  ["ISOFLAVONA-DE-SOJA","Cápsula","150 mg","Fitoterápico","ok"],
+  ["ACICLOVIR","Comprimido","200 mg","Antiviral","ok"],
+  ["AMOXICILINA","Cápsula","500 mg","Antimicrobiano — Penicilinas","ok"],
+  ["AMOXICILINA","Suspensão oral","50 mg/mL","Antimicrobiano — Penicilinas","ok"],
+  ["AMOXICILINA + CLAVULANATO DE POTÁSSIO","Suspensão oral","50 mg/mL + 12,5 mg/mL","Antimicrobiano — Penicilinas","out"],
+  ["AMOXICILINA + CLAVULANATO DE POTÁSSIO","Comprimido","500 mg + 125 mg","Antimicrobiano — Penicilinas","out"],
+  ["AZITROMICINA","Comprimido","500 mg","Antimicrobiano — Macrolídeos","ok"],
+  ["AZITROMICINA","Pó para suspensão oral","40 mg/mL","Antimicrobiano — Macrolídeos","ok"],
+  ["BENZILPENICILINA BENZATINA","Suspensão injetável","1.200.000 UI","Antimicrobiano — Penicilinas","restrict"],
+  ["CEFALEXINA","Cápsula","500 mg","Antimicrobiano — Cefalosporinas","ok"],
+  ["CEFALEXINA","Suspensão oral","50 mg/mL","Antimicrobiano — Cefalosporinas","ok"],
+  ["CEFTRIAXONA","Pó para solução injetável","1 g","Antimicrobiano — Cefalosporinas","restrict"],
+  ["CIPROFLOXACINO","Comprimido","500 mg","Antimicrobiano — Fluorquinolonas","out"],
+  ["CLARITROMICINA","Comprimido revestido","500 mg","Antimicrobiano — Macrolídeos","ok"],
+  ["CLARITROMICINA","Suspensão oral","50 mg/mL","Antimicrobiano — Macrolídeos","ok"],
+  ["CLINDAMICINA (CLORIDRATO DE)","Cápsula","300 mg","Antimicrobiano — Lincosaminas","ok"],
+  ["CLOFAZIMINA","Comprimido","50 mg","Antimicrobiano — Hansenostático","restrict"],
+  ["CLOFAZIMINA","Comprimido","100 mg","Antimicrobiano — Hansenostático","restrict"],
+];
+
+const statusLabel = { ok:"Disponível", out:"Em falta", low:"Baixo estoque", restrict:"Restrito" };
+const statusClass = { ok:"badge-ok", out:"badge-out", low:"badge-low", restrict:"badge-restrict" };
+
+// Populate class filter
+const classes = [...new Set(data.map(r => r[3]))].sort();
+const sel = document.getElementById('fClass');
+classes.forEach(c => {
+  const o = document.createElement('option');
+  o.value = c; o.textContent = c;
+  sel.appendChild(o);
+});
+
+// Stats
+document.getElementById('s-total').textContent = data.length;
+document.getElementById('s-ok').textContent = data.filter(r => r[4]==='ok').length;
+document.getElementById('s-out').textContent = data.filter(r => r[4]==='out').length;
+document.getElementById('s-low').textContent = data.filter(r => r[4]==='low').length;
+document.getElementById('s-rest').textContent = data.filter(r => r[4]==='restrict').length;
+
+// Date
+const now = new Date();
+document.getElementById('dataBadge').textContent =
+  'Atualizado em ' + now.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'});
+
+function render() {
+  const q  = document.getElementById('search').value.toLowerCase();
+  const fs = document.getElementById('fStatus').value;
+  const fc = document.getElementById('fClass').value;
+
+  const filtered = data.filter(r => {
+    const matchQ  = !q  || r[0].toLowerCase().includes(q) || r[3].toLowerCase().includes(q) || r[2].toLowerCase().includes(q);
+    const matchS  = !fs || r[4] === fs;
+    const matchC  = !fc || r[3] === fc;
+    return matchQ && matchS && matchC;
+  });
+
+  document.getElementById('resultCount').textContent =
+    filtered.length + ' de ' + data.length + ' itens';
+
+  const tbody = document.getElementById('tbody');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="5">Nenhum item encontrado para os filtros selecionados.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(r => `
+    <tr>
+      <td class="td-name">${r[0]}</td>
+      <td class="td-form">${r[1]}</td>
+      <td class="td-conc">${r[2]}</td>
+      <td class="td-class">${r[3]}</td>
+      <td><span class="badge ${statusClass[r[4]]}"><span class="badge-dot"></span>${statusLabel[r[4]]}</span></td>
+    </tr>`).join('');
+}
+
+render();
+</script>
+</body>
+</html>
