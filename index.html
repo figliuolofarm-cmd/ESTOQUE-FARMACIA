@@ -161,7 +161,7 @@
     outline: none;
     cursor: pointer;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%236b6a65' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%236b6a65' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 10px center;
     transition: border-color 0.15s;
@@ -244,6 +244,19 @@
   .badge-low .badge-dot    { background: var(--amber-text); }
   .badge-restrict { background: var(--blue-bg); color: var(--blue-text); }
   .badge-restrict .badge-dot { background: var(--blue-text); }
+
+  .status-select {
+    min-width: 165px;
+    width: 100%;
+    padding: 7px 30px 7px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background-color: var(--surface);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .status-select option { font-weight: 500; }
 
   /* EMPTY */
   .empty-row td {
@@ -562,6 +575,14 @@ const data = [
 const statusLabel = { ok:"Disponível", out:"Em falta", low:"Baixo estoque", restrict:"Restrito" };
 const statusClass = { ok:"badge-ok", out:"badge-out", low:"badge-low", restrict:"badge-restrict" };
 
+function updateStats() {
+  document.getElementById('s-total').textContent = data.length;
+  document.getElementById('s-ok').textContent = data.filter(r => r[4] === 'ok').length;
+  document.getElementById('s-out').textContent = data.filter(r => r[4] === 'out').length;
+  document.getElementById('s-low').textContent = data.filter(r => r[4] === 'low').length;
+  document.getElementById('s-rest').textContent = data.filter(r => r[4] === 'restrict').length;
+}
+
 // Populate REMUME filter
 const remumes = [...new Set(data.map(r => r[3]))].sort();
 const selRemume = document.getElementById('fRemume');
@@ -571,24 +592,28 @@ remumes.forEach(r => {
   selRemume.appendChild(o);
 });
 
-// Stats
-document.getElementById('s-total').textContent = data.length;
-document.getElementById('s-ok').textContent = data.filter(r => r[4]==='ok').length;
-document.getElementById('s-out').textContent = data.filter(r => r[4]==='out').length;
-document.getElementById('s-low').textContent = data.filter(r => r[4]==='low').length;
-document.getElementById('s-rest').textContent = data.filter(r => r[4]==='restrict').length;
+updateStats();
 
-// Date
 const now = new Date();
 document.getElementById('dataBadge').textContent =
   'Atualizado em ' + now.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'});
+
+function statusSelectMarkup(index, currentStatus) {
+  return `
+    <select class="status-select" data-row-index="${index}" aria-label="Alterar status do medicamento">
+      ${Object.entries(statusLabel).map(([key, label]) => `
+        <option value="${key}" ${key === currentStatus ? 'selected' : ''}>${label}</option>
+      `).join('')}
+    </select>
+  `;
+}
 
 function render() {
   const q  = document.getElementById('search').value.toLowerCase();
   const fs = document.getElementById('fStatus').value;
   const fr = document.getElementById('fRemume').value;
 
-  const filtered = data.filter(r => {
+  const filtered = data.filter((r, index) => {
     const matchQ  = !q  || r[0].toLowerCase().includes(q) || r[3].toLowerCase().includes(q) || r[2].toLowerCase().includes(q);
     const matchS  = !fs || r[4] === fs;
     const matchR  = !fr || r[3] === fr;
@@ -604,15 +629,31 @@ function render() {
     return;
   }
 
-  tbody.innerHTML = filtered.map(r => `
-    <tr>
-      <td class="td-name">${r[0]}</td>
-      <td class="td-form">${r[1]}</td>
-      <td class="td-conc">${r[2]}</td>
-      <td class="td-remume">${r[3]}</td>
-      <td><span class="badge ${statusClass[r[4]]}"><span class="badge-dot"></span>${statusLabel[r[4]]}</span></td>
-    </tr>`).join('');
+  tbody.innerHTML = filtered.map(r => {
+    const originalIndex = data.indexOf(r);
+    return `
+      <tr>
+        <td class="td-name">${r[0]}</td>
+        <td class="td-form">${r[1]}</td>
+        <td class="td-conc">${r[2]}</td>
+        <td class="td-remume">${r[3]}</td>
+        <td>
+          ${statusSelectMarkup(originalIndex, r[4])}
+        </td>
+      </tr>`;
+  }).join('');
 }
+
+document.addEventListener('change', (event) => {
+  if (!event.target.matches('.status-select')) return;
+
+  const rowIndex = Number(event.target.dataset.rowIndex);
+  if (Number.isNaN(rowIndex) || rowIndex < 0 || rowIndex >= data.length) return;
+
+  data[rowIndex][4] = event.target.value;
+  updateStats();
+  render();
+});
 
 render();
 </script>
