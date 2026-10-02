@@ -62,6 +62,11 @@
     color: var(--muted);
     margin-top: 3px;
   }
+  .header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
   .update-badge {
     font-size: 11px;
     font-family: 'DM Mono', monospace;
@@ -70,6 +75,50 @@
     border: 1px solid var(--border);
     border-radius: 20px;
     padding: 4px 12px;
+  }
+  .save-btn {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: white;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .save-btn:hover {
+    background: #158860;
+    border-color: #158860;
+  }
+  .save-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .reset-btn {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .reset-btn:hover {
+    background: var(--bg);
+    border-color: var(--muted);
+  }
+  .save-status {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    min-width: 150px;
+    text-align: right;
+  }
+  .save-status.saved {
+    color: var(--green);
   }
 
   /* STATS */
@@ -215,7 +264,30 @@
     font-size: 13px;
     color: var(--text);
   }
-  .td-name { font-weight: 500; font-size: 13px; max-width: 260px; }
+  .td-name {
+    font-weight: 500;
+    font-size: 13px;
+    max-width: 260px;
+    padding: 11px 14px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .td-name.status-ok {
+    background: var(--green-bg);
+    color: var(--green-text);
+  }
+  .td-name.status-out {
+    background: var(--red-bg);
+    color: var(--red-text);
+  }
+  .td-name.status-low {
+    background: var(--amber-bg);
+    color: var(--amber-text);
+  }
+  .td-name.status-restrict {
+    background: var(--blue-bg);
+    color: var(--blue-text);
+  }
   .td-form { color: var(--muted); font-size: 12px; max-width: 200px; }
   .td-conc { font-family: 'DM Mono', monospace; font-size: 12px; white-space: nowrap; max-width: 180px; }
   .td-remume { color: var(--muted); font-size: 12px; max-width: 280px; }
@@ -290,10 +362,12 @@
 
   @media (max-width: 640px) {
     .header-inner, .stats-inner { flex-direction: column; gap: 0.75rem; }
+    .header-actions { flex-wrap: wrap; }
     .stat { border-right: none; border-bottom: 1px solid var(--border); padding: 0.75rem 0; }
     .stat:last-child { border-bottom: none; }
     .page-header, .stats-bar, .controls-wrap, .table-wrap, .legend { padding-left: 1rem; padding-right: 1rem; }
     .table-wrap { overflow-x: auto; }
+    .save-status { min-width: auto; }
   }
 </style>
 </head>
@@ -311,7 +385,12 @@
       </h1>
       <p>Consulta de medicamentos, concentrações e disponibilidade</p>
     </div>
-    <div class="update-badge" id="dataBadge">Atualizado em —</div>
+    <div class="header-actions">
+      <div class="save-status" id="saveStatus">Dados salvos</div>
+      <button class="reset-btn" id="resetBtn" title="Restaurar dados originais">Restaurar</button>
+      <button class="save-btn" id="saveBtn" title="Salvar alterações no navegador">Salvar Alterações</button>
+      <div class="update-badge" id="dataBadge">Atualizado em —</div>
+    </div>
   </div>
 </header>
 
@@ -388,7 +467,7 @@
 </footer>
 
 <script>
-const data = [
+const originalData = [
   ["CARBONATO DE CÁLCIO + COLECALCIFEROL","Comprimido","1.250 mg (500 mg de cálcio) + 200 UI","A Trato alimentar e metabolismo","ok"],
   ["GLIBENCLAMIDA","Comprimido","5 mg","A Trato alimentar e metabolismo","ok"],
   ["GLICLAZIDA","Comprimido de liberação prolongada","30 mg","A Trato alimentar e metabolismo","out"],
@@ -572,8 +651,61 @@ const data = [
   ["SALBUTAMOL (SULFATO DE)","Aerossol oral","100 mcg/dose","R Sistema respiratório","ok"],
 ];
 
+let data = JSON.parse(JSON.stringify(originalData));
+
 const statusLabel = { ok:"Disponível", out:"Em falta", low:"Baixo estoque", restrict:"Restrito" };
 const statusClass = { ok:"badge-ok", out:"badge-out", low:"badge-low", restrict:"badge-restrict" };
+
+// Carregar dados salvos do localStorage
+function loadSavedData() {
+  const saved = localStorage.getItem('farmaciaEstoqueData');
+  if (saved) {
+    try {
+      data = JSON.parse(saved);
+      updateSaveStatus(true);
+    } catch (e) {
+      console.error('Erro ao carregar dados salvos:', e);
+      updateSaveStatus(false);
+    }
+  } else {
+    updateSaveStatus(false);
+  }
+}
+
+// Salvar dados no localStorage
+function saveData() {
+  try {
+    localStorage.setItem('farmaciaEstoqueData', JSON.stringify(data));
+    updateSaveStatus(true);
+    updateStats();
+    render();
+  } catch (e) {
+    console.error('Erro ao salvar dados:', e);
+    alert('Erro ao salvar alterações!');
+  }
+}
+
+// Restaurar dados originais
+function resetData() {
+  if (confirm('Deseja restaurar todos os dados para o estado original? Esta ação não pode ser desfeita.')) {
+    data = JSON.parse(JSON.stringify(originalData));
+    localStorage.removeItem('farmaciaEstoqueData');
+    updateSaveStatus(false);
+    updateStats();
+    render();
+  }
+}
+
+function updateSaveStatus(isSaved) {
+  const statusEl = document.getElementById('saveStatus');
+  if (isSaved) {
+    statusEl.textContent = '✓ Dados salvos';
+    statusEl.classList.add('saved');
+  } else {
+    statusEl.textContent = 'Alterações não salvas';
+    statusEl.classList.remove('saved');
+  }
+}
 
 function updateStats() {
   document.getElementById('s-total').textContent = data.length;
@@ -592,6 +724,8 @@ remumes.forEach(r => {
   selRemume.appendChild(o);
 });
 
+// Carregar dados salvos e atualizar
+loadSavedData();
 updateStats();
 
 const now = new Date();
@@ -633,7 +767,7 @@ function render() {
     const originalIndex = data.indexOf(r);
     return `
       <tr>
-        <td class="td-name">${r[0]}</td>
+        <td class="td-name status-${r[4]}">${r[0]}</td>
         <td class="td-form">${r[1]}</td>
         <td class="td-conc">${r[2]}</td>
         <td class="td-remume">${r[3]}</td>
@@ -651,9 +785,13 @@ document.addEventListener('change', (event) => {
   if (Number.isNaN(rowIndex) || rowIndex < 0 || rowIndex >= data.length) return;
 
   data[rowIndex][4] = event.target.value;
+  updateSaveStatus(false);
   updateStats();
   render();
 });
+
+document.getElementById('saveBtn').addEventListener('click', saveData);
+document.getElementById('resetBtn').addEventListener('click', resetData);
 
 render();
 </script>
