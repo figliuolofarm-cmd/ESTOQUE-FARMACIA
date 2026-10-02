@@ -458,6 +458,11 @@
   <select id="fRemume" onchange="render()" aria-label="Filtrar por classe REMUME">
     <option value="">Todas as classes REMUME</option>
   </select>
+  <select id="sortMode" onchange="render()" aria-label="Ordenar por ordem alfabética">
+    <option value="default">Ordenar por: padrão</option>
+    <option value="az">Ordenar por: A-Z</option>
+    <option value="za">Ordenar por: Z-A</option>
+  </select>
   <div class="results-count" id="resultCount"></div>
 </div>
 
@@ -679,6 +684,7 @@ const statusLabel = { ok:"Disponível", out:"Em falta", low:"Baixo estoque", res
 const statusClass = { ok:"badge-ok", out:"badge-out", low:"badge-low", restrict:"badge-restrict" };
 
 let currentSort = { column: null, direction: 'asc' };
+const sortModeEl = document.getElementById('sortMode');
 
 // Carregar dados salvos do localStorage
 function loadSavedData() {
@@ -715,6 +721,7 @@ function resetData() {
     data = JSON.parse(JSON.stringify(originalData));
     localStorage.removeItem('farmaciaEstoqueData');
     currentSort = { column: null, direction: 'asc' };
+    sortModeEl.value = 'default';
     updateSaveStatus(false);
     updateStats();
     render();
@@ -768,6 +775,16 @@ function statusSelectMarkup(index, currentStatus) {
 }
 
 function sortData(filtered) {
+  const sortMode = sortModeEl.value;
+
+  if (sortMode === 'az') {
+    return [...filtered].sort((a, b) => a[0].localeCompare(b[0], 'pt-BR', { sensitivity: 'base' }));
+  }
+
+  if (sortMode === 'za') {
+    return [...filtered].sort((a, b) => b[0].localeCompare(a[0], 'pt-BR', { sensitivity: 'base' }));
+  }
+
   if (!currentSort.column) return filtered;
 
   const sorted = [...filtered];
@@ -822,10 +839,11 @@ function render() {
 }
 
 // Adicionar eventos aos headers para ordenação
-document.querySelectorAll('thead th.sortable').forEach(th => {
+const headerEls = document.querySelectorAll('thead th.sortable');
+headerEls.forEach(th => {
   th.addEventListener('click', () => {
     const columnIndex = Number(th.dataset.column);
-    
+
     if (currentSort.column === columnIndex) {
       currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
     } else {
@@ -833,12 +851,9 @@ document.querySelectorAll('thead th.sortable').forEach(th => {
       currentSort.direction = 'asc';
     }
 
-    // Remover classes de outros headers
-    document.querySelectorAll('thead th.sortable').forEach(h => {
-      h.classList.remove('sort-asc', 'sort-desc');
-    });
+    sortModeEl.value = 'default';
 
-    // Adicionar classe ao header clicado
+    headerEls.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
     th.classList.add(currentSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
 
     render();
