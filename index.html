@@ -251,6 +251,28 @@
     background: var(--bg);
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.1s;
+  }
+  thead th:hover {
+    background: #e8e6de;
+  }
+  thead th.sortable::after {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-left: 6px;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 1L5 3L7 1M3 9L5 7L7 9' stroke='%236b6a65' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  thead th.sort-asc::after {
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 2L2 5M5 2L8 5M5 2V8' stroke='%231D9E75' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");
+  }
+  thead th.sort-desc::after {
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 8L2 5M5 8L8 5M5 8V2' stroke='%231D9E75' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");
   }
   tbody tr {
     border-bottom: 1px solid var(--border);
@@ -451,10 +473,10 @@
   <table role="table" aria-label="Tabela de estoque de medicamentos">
     <thead>
       <tr>
-        <th>Denominação genérica</th>
-        <th>Forma farmacêutica</th>
-        <th>Concentração</th>
-        <th>Classe REMUME</th>
+        <th class="sortable" data-column="0">Denominação genérica</th>
+        <th class="sortable" data-column="1">Forma farmacêutica</th>
+        <th class="sortable" data-column="2">Concentração</th>
+        <th class="sortable" data-column="3">Classe REMUME</th>
         <th>Status</th>
       </tr>
     </thead>
@@ -656,6 +678,8 @@ let data = JSON.parse(JSON.stringify(originalData));
 const statusLabel = { ok:"Disponível", out:"Em falta", low:"Baixo estoque", restrict:"Restrito" };
 const statusClass = { ok:"badge-ok", out:"badge-out", low:"badge-low", restrict:"badge-restrict" };
 
+let currentSort = { column: null, direction: 'asc' };
+
 // Carregar dados salvos do localStorage
 function loadSavedData() {
   const saved = localStorage.getItem('farmaciaEstoqueData');
@@ -690,6 +714,7 @@ function resetData() {
   if (confirm('Deseja restaurar todos os dados para o estado original? Esta ação não pode ser desfeita.')) {
     data = JSON.parse(JSON.stringify(originalData));
     localStorage.removeItem('farmaciaEstoqueData');
+    currentSort = { column: null, direction: 'asc' };
     updateSaveStatus(false);
     updateStats();
     render();
@@ -742,17 +767,35 @@ function statusSelectMarkup(index, currentStatus) {
   `;
 }
 
+function sortData(filtered) {
+  if (!currentSort.column) return filtered;
+
+  const sorted = [...filtered];
+  sorted.sort((a, b) => {
+    const aVal = a[currentSort.column].toString().toLowerCase();
+    const bVal = b[currentSort.column].toString().toLowerCase();
+
+    if (aVal < bVal) return currentSort.direction === 'asc' ? -1 : 1;
+    if (aVal > bVal) return currentSort.direction === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  return sorted;
+}
+
 function render() {
   const q  = document.getElementById('search').value.toLowerCase();
   const fs = document.getElementById('fStatus').value;
   const fr = document.getElementById('fRemume').value;
 
-  const filtered = data.filter((r, index) => {
+  let filtered = data.filter((r, index) => {
     const matchQ  = !q  || r[0].toLowerCase().includes(q) || r[3].toLowerCase().includes(q) || r[2].toLowerCase().includes(q);
     const matchS  = !fs || r[4] === fs;
     const matchR  = !fr || r[3] === fr;
     return matchQ && matchS && matchR;
   });
+
+  filtered = sortData(filtered);
 
   document.getElementById('resultCount').textContent =
     filtered.length + ' de ' + data.length + ' itens';
@@ -777,6 +820,30 @@ function render() {
       </tr>`;
   }).join('');
 }
+
+// Adicionar eventos aos headers para ordenação
+document.querySelectorAll('thead th.sortable').forEach(th => {
+  th.addEventListener('click', () => {
+    const columnIndex = Number(th.dataset.column);
+    
+    if (currentSort.column === columnIndex) {
+      currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+      currentSort.column = columnIndex;
+      currentSort.direction = 'asc';
+    }
+
+    // Remover classes de outros headers
+    document.querySelectorAll('thead th.sortable').forEach(h => {
+      h.classList.remove('sort-asc', 'sort-desc');
+    });
+
+    // Adicionar classe ao header clicado
+    th.classList.add(currentSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+
+    render();
+  });
+});
 
 document.addEventListener('change', (event) => {
   if (!event.target.matches('.status-select')) return;
