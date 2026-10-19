@@ -264,15 +264,15 @@
     width: 10px;
     height: 10px;
     margin-left: 6px;
-    background-image: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 1L5 3L7 1M3 9L5 7L7 9' stroke='%236b6a65' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 1L5 3L7 1M3 9L5 7L7 9' stroke='%236b6a65' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: center;
   }
   thead th.sort-asc::after {
-    background-image: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 2L2 5M5 2L8 5M5 2V8' stroke='%231D9E75' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 2L2 5M5 2L8 5M5 2V8' stroke='%231D9E75' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   }
   thead th.sort-desc::after {
-    background-image: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 8L2 5M5 8L8 5M5 8V2' stroke='%231D9E75' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 8L2 5M5 8L8 5M5 8V2' stroke='%231D9E75' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   }
   tbody tr {
     border-bottom: 1px solid var(--border);
@@ -497,13 +497,13 @@
 const originalData = [
   ["CARBONATO DE CÁLCIO + COLECALCIFEROL","Comprimido","1.250 mg (500 mg de cálcio) + 200 UI","A Trato alimentar e metabolismo","ok"],
   ["GLIBENCLAMIDA","Comprimido","5 mg","A Trato alimentar e metabolismo","ok"],
-  ["GLICLAZIDA","Comprimido de liberação prolongada","30 mg","A Trato alimentar e metabolismo","out"],
+  ["GLICLAZIDA","Comprimido de liberação prolongada","30 mg","A Trato alimentar e metabolismo","ok"],
   ["GLICLAZIDA","Comprimido de liberação prolongada","60 mg","A Trato alimentar e metabolismo","ok"],
   ["INSULINA HUMANA NPH","Suspensão injetável","100 UI/mL","A Trato alimentar e metabolismo","ok"],
   ["INSULINA HUMANA NPH","Carpule 3mL","100 UI/mL","A Trato alimentar e metabolismo","ok"],
   ["INSULINA HUMANA REGULAR","Solução injetável","100 UI/mL","A Trato alimentar e metabolismo","ok"],
   ["INSULINA HUMANA REGULAR","Carpule 3mL","100 UI/mL","A Trato alimentar e metabolismo","ok"],
-  ["LACTULOSE","Xarope","667 mg/mL","A Trato alimentar e metabolismo","out"],
+  ["LACTULOSE","Xarope","667 mg/mL","A Trato alimentar e metabolismo","ok"],
   ["METFORMINA (CLORIDRATO DE)","Comprimido","500 mg","A Trato alimentar e metabolismo","ok"],
   ["METFORMINA (CLORIDRATO DE)","Comprimido","850 mg","A Trato alimentar e metabolismo","ok"],
   ["METOCLOPRAMIDA (CLORIDRATO DE)","Comprimido","10 mg","A Trato alimentar e metabolismo","ok"],
@@ -578,7 +578,7 @@ const originalData = [
   ["AMOXICILINA + CLAVULANATO DE POTÁSSICO","Suspensão oral","50 mg/mL + 12,5 mg/mL","J Anti-infecciosos para uso sistêmico","ok"],
   ["AMOXICILINA + CLAVULANATO DE POTÁSSICO","Comprimido","500 mg + 125 mg","J Anti-infecciosos para uso sistêmico","ok"],
   ["AZITROMICINA","Comprimido","500 mg","J Anti-infecciosos para uso sistêmico","ok"],
-  ["AZITROMICINA","Pó para suspensão oral","40 mg/mL","J Anti-infecciosos para uso sistêmico","out"],
+  ["AZITROMICINA","Pó para suspensão oral","40 mg/mL","J Anti-infecciosos para uso sistêmico","ok"],
   ["BENZILPENICILINA BENZATINA","Suspensão injetável ou pó para suspensão injetável","1.200.000 UI","J Anti-infecciosos para uso sistêmico","restrict"],
   ["CEFALEXINA","Cápsula","500 mg","J Anti-infecciosos para uso sistêmico","ok"],
   ["CEFALEXINA","Suspensão oral","50 mg/mL","J Anti-infecciosos para uso sistêmico","ok"],
@@ -586,7 +586,7 @@ const originalData = [
   ["CIPROFLOXACINO","Comprimido","500 mg","J Anti-infecciosos para uso sistêmico","ok"],
   ["CLARITROMICINA","Comprimido revestido","500 mg","J Anti-infecciosos para uso sistêmico","ok"],
   ["CLARITROMICINA","Suspensão oral","50 mg/mL","J Anti-infecciosos para uso sistêmico","ok"],
-  ["CLINDAMICINA (CLORIDRATO DE)","Cápsula","300 mg","J Anti-infecciosos para uso sistêmico","out"],
+  ["CLINDAMICINA (CLORIDRATO DE)","Cápsula","300 mg","J Anti-infecciosos para uso sistêmico","ok"],
   ["CLOFAZIMINA","Comprimido","50 mg","J Anti-infecciosos para uso sistêmico","restrict"],
   ["CLOFAZIMINA","Comprimido","100 mg","J Anti-infecciosos para uso sistêmico","restrict"],
   ["DAPSONA","Comprimido","50 mg","J Anti-infecciosos para uso sistêmico","restrict"],
@@ -623,7 +623,7 @@ const originalData = [
   ["BUPROPIONA (CLORIDRATO DE)","Comprimido de liberação prolongada","150 mg","N Sistema nervoso","restrict"],
   ["CARBAMAZEPINA","Comprimido","200 mg","N Sistema nervoso","ok"],
   ["CARBAMAZEPINA","Suspensão Oral","20 mg/mL","N Sistema nervoso","ok"],
-  ["CARBONATO DE LÍTIO","Comprimido","300 mg","N Sistema nervoso","out"],
+  ["CARBONATO DE LÍTIO","Comprimido","300 mg","N Sistema nervoso","ok"],
   ["CLOMIPRAMINA (CLORIDRATO DE)","Comprimido","25 mg","N Sistema nervoso","ok"],
   ["CLONAZEPAM","Solução oral","2,5 mg/mL","N Sistema nervoso","ok"],
   ["CLORPROMAZINA (CLORIDRATO DE)","Comprimido","100 mg","N Sistema nervoso","ok"],
@@ -643,7 +643,7 @@ const originalData = [
   ["LEVODOPA + BENSERAZIDA","Comprimido dispersível","100 mg + 25 mg","N Sistema nervoso","ok"],
   ["LEVODOPA + BENSERAZIDA","Cápsula (HBS)","100 mg + 25 mg","N Sistema nervoso","ok"],
   ["LEVODOPA + BENSERAZIDA","Comprimido de liberação dupla (DR)","200 mg + 50 mg","N Sistema nervoso","ok"],
-  ["LEVODOPA + CARBIDOPA","Comprimido","250 mg + 25 mg","N Sistema nervoso","out"],
+  ["LEVODOPA + CARBIDOPA","Comprimido","250 mg + 25 mg","N Sistema nervoso","ok"],
   ["NICOTINA","Adesivo transdérmico","21 mg","N Sistema nervoso","ok"],
   ["NICOTINA","Adesivo transdérmico","14 mg","N Sistema nervoso","ok"],
   ["NICOTINA","Adesivo transdérmico","7 mg","N Sistema nervoso","ok"],
@@ -668,7 +668,7 @@ const originalData = [
   ["TAFENOQUINA (SUCCINATO DE)","Comprimido","150 mg","P Produtos antiparasitários, inseticidas e repelentes","restrict"],
   ["BECLOMETASONA (DIPROPIONATO DE)","Solução para inalação oral","250 mcg/dose","R Sistema respiratório","ok"],
   ["BUDESONIDA","Suspensão para inalação nasal","32 mcg/dose","R Sistema respiratório","ok"],
-  ["BUDESONIDA","Suspensão para inalação nasal","50 mcg/dose","R Sistema respiratório","out"],
+  ["BUDESONIDA","Suspensão para inalação nasal","50 mcg/dose","R Sistema respiratório","ok"],
   ["BUDESONIDA","Suspensão para inalação nasal","64 mcg/dose","R Sistema respiratório","ok"],
   ["CLORETO DE SÓDIO","Solução estéril não injetável 250 mL","0,154 mEq/mL (0,9%)","R Sistema respiratório","restrict"],
   ["CLORETO DE SÓDIO","Solução nasal","9 mg/mL (0,9%)","R Sistema respiratório","ok"],
